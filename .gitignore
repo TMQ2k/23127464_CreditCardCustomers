@@ -1,0 +1,29 @@
+# ---- Python bytecode ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.zip
+
+# ---- Virtual environments ----
+venv/
+.env/
+env/
+ENV/
+.venv/
+
+# ---- Jupyter Notebook ----
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# ---- Logs ----
+*.log
+
+# ---- VSCode ----
+.vscode/
+
+# ---- Cache & Temporary ----
+*.tmp
+*.swp
+*.bak
