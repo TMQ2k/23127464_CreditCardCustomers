@@ -60,24 +60,20 @@ def f1_score(y_true, y_pred):
 
 
 def roc_auc_score(y_true, y_proba):
-    desc_score_indices = np.argsort(y_proba)[::-1]
-    y_true_sorted = y_true[desc_score_indices]
-    y_proba_sorted = y_proba[desc_score_indices]
-    thresholds = np.unique(y_proba_sorted)
+    n_thresholds = 1000
+    thresholds = np.linspace(1, 0, n_thresholds)
     tpr_list = []
     fpr_list = []
     for threshold in thresholds:
-        y_pred = (y_proba_sorted >= threshold).astype(int)
-        tp = np.sum((y_true_sorted == 1) & (y_pred == 1))
-        fp = np.sum((y_true_sorted == 0) & (y_pred == 1))
-        tn = np.sum((y_true_sorted == 0) & (y_pred == 0))
-        fn = np.sum((y_true_sorted == 1) & (y_pred == 0))
+        y_pred = (y_proba >= threshold).astype(int)
+        tp = np.sum((y_true == 1) & (y_pred == 1))
+        fp = np.sum((y_true == 0) & (y_pred == 1))
+        tn = np.sum((y_true == 0) & (y_pred == 0))
+        fn = np.sum((y_true == 1) & (y_pred == 0))
         tpr = tp / (tp + fn) if (tp + fn) > 0 else 0
         fpr = fp / (fp + tn) if (fp + tn) > 0 else 0
         tpr_list.append(tpr)
         fpr_list.append(fpr)
-    fpr_list = [0] + fpr_list + [1]
-    tpr_list = [0] + tpr_list + [1]
     fpr_array = np.array(fpr_list)
     tpr_array = np.array(tpr_list)
     auc = np.trapz(tpr_array, fpr_array)
@@ -109,44 +105,6 @@ def classification_report(y_true, y_pred, target_names=None):
         'support': len(y_true)
     }
     return report
-
-class LinearRegression:
-    def __init__(self, method='normal_equation', learning_rate=0.01, n_iterations=1000):
-        self.method = method
-        self.learning_rate = learning_rate
-        self.n_iterations = n_iterations
-        self.weights = None
-        self.bias = None
-        self.history = {'loss': []}
-    
-    def fit(self, X, y):
-        n_samples, n_features = X.shape
-        if self.method == 'normal_equation':
-            X_b = np.c_[np.ones((n_samples, 1)), X]
-            theta = np.linalg.inv(X_b.T @ X_b) @ X_b.T @ y
-            self.bias = theta[0]
-            self.weights = theta[1:]
-        elif self.method == 'gradient_descent':
-            self.weights = np.zeros(n_features)
-            self.bias = 0
-            for iteration in range(self.n_iterations):
-                y_pred = X @ self.weights + self.bias
-                loss = mean_squared_error(y, y_pred)
-                self.history['loss'].append(loss)
-                dw = (1 / n_samples) * X.T @ (y_pred - y)
-                db = (1 / n_samples) * np.sum(y_pred - y)
-                self.weights -= self.learning_rate * dw
-                self.bias -= self.learning_rate * db
-        return self
-    
-    def predict(self, X):
-        return X @ self.weights + self.bias
-    
-    def score(self, X, y):
-        y_pred = self.predict(X)
-        ss_res = np.sum((y - y_pred) ** 2)
-        ss_tot = np.sum((y - np.mean(y)) ** 2)
-        return 1 - (ss_res / ss_tot)
 
 
 class LogisticRegression:
@@ -199,51 +157,6 @@ class LogisticRegression:
 
 
 # ============================================================================
-# K-NEAREST NEIGHBORS (KNN)
-# ============================================================================
-
-class KNeighborsClassifier:
-    def __init__(self, n_neighbors=5, metric='euclidean'):
-        self.n_neighbors = n_neighbors
-        self.metric = metric
-        self.X_train = None
-        self.y_train = None
-    
-    def fit(self, X, y):
-        self.X_train = X
-        self.y_train = y
-        return self
-    
-    def _compute_distance(self, x1, x2):
-        if self.metric == 'euclidean':
-            return np.sqrt(np.sum((x1 - x2) ** 2, axis=1))
-        elif self.metric == 'manhattan':
-            return np.sum(np.abs(x1 - x2), axis=1)
-        elif self.metric == 'cosine':
-            dot_product = np.sum(x1 * x2, axis=1)
-            norm1 = np.linalg.norm(x1, axis=1)
-            norm2 = np.linalg.norm(x2)
-            return 1 - (dot_product / (norm1 * norm2 + 1e-10))
-        else:
-            raise ValueError(f"Unknown metric: {self.metric}")
-    
-    def predict(self, X):
-        predictions = []
-        for x in X:
-            distances = self._compute_distance(self.X_train, x)
-            k_indices = np.argsort(distances)[:self.n_neighbors]
-            k_nearest_labels = self.y_train[k_indices]
-            unique_labels, counts = np.unique(k_nearest_labels, return_counts=True)
-            predicted_label = unique_labels[np.argmax(counts)]
-            predictions.append(predicted_label)
-        return np.array(predictions)
-    
-    def score(self, X, y):
-        y_pred = self.predict(X)
-        return accuracy_score(y, y_pred)
-
-
-# ============================================================================
 # CROSS-VALIDATION
 # ============================================================================
 
@@ -283,73 +196,34 @@ def cross_val_score(model, X, y, cv=5, scoring='accuracy'):
     folds = k_fold_split(len(X), n_folds=cv, shuffle=True, random_state=42)
     scores = []
     for fold_idx, (train_idx, test_idx) in enumerate(folds):
-        X_train, X_test = X[train_idx], X[test_idx]
-        y_train, y_test = y[train_idx], y[test_idx]
+        X_train_fold, X_test_fold = X[train_idx], X[test_idx]
+        y_train_fold, y_test_fold = y[train_idx], y[test_idx]
         if isinstance(model, LogisticRegression):
             fold_model = LogisticRegression(learning_rate=model.learning_rate, n_iterations=model.n_iterations, regularization=model.regularization, lambda_reg=model.lambda_reg)
-        elif isinstance(model, KNeighborsClassifier):
-            fold_model = KNeighborsClassifier(n_neighbors=model.n_neighbors, metric=model.metric)
-        elif isinstance(model, LinearRegression):
-            fold_model = LinearRegression(method=model.method, learning_rate=model.learning_rate, n_iterations=model.n_iterations)
         else:
-            fold_model = model
-        fold_model.fit(X_train, y_train)
-        y_pred = fold_model.predict(X_test)
-        if scoring == 'accuracy':
-            score = accuracy_score(y_test, y_pred)
-        elif scoring == 'precision':
-            score = precision_score(y_test, y_pred)
-        elif scoring == 'recall':
-            score = recall_score(y_test, y_pred)
-        elif scoring == 'f1':
-            score = f1_score(y_test, y_pred)
-        elif scoring == 'roc_auc':
+            raise ValueError("Unknown model type")
+        fold_model.fit(X_train_fold, y_train_fold)
+        if scoring == 'roc_auc':
             if hasattr(fold_model, 'predict_proba'):
-                y_proba = fold_model.predict_proba(X_test)
-                score = roc_auc_score(y_test, y_proba)
+                y_proba = fold_model.predict_proba(X_test_fold)
+                score = roc_auc_score(y_test_fold, y_proba)
             else:
-                score = accuracy_score(y_test, y_pred)
+                y_pred = fold_model.predict(X_test_fold)
+                score = accuracy_score(y_test_fold, y_pred)
         else:
-            raise ValueError(f"Unknown scoring: {scoring}")
+            y_pred = fold_model.predict(X_test_fold)
+            if scoring == 'accuracy':
+                score = accuracy_score(y_test_fold, y_pred)
+            elif scoring == 'precision':
+                score = precision_score(y_test_fold, y_pred)
+            elif scoring == 'recall':
+                score = recall_score(y_test_fold, y_pred)
+            elif scoring == 'f1':
+                score = f1_score(y_test_fold, y_pred)
+            else:
+                raise ValueError(f"Unknown scoring: {scoring}")
         scores.append(score)
     return np.array(scores)
-
-class GridSearchCV:
-    def __init__(self, model_class, param_grid, cv=5, scoring='accuracy'):
-        self.model_class = model_class
-        self.param_grid = param_grid
-        self.cv = cv
-        self.scoring = scoring
-        self.best_params_ = None
-        self.best_score_ = -np.inf
-        self.best_model_ = None
-        self.results_ = []
-    
-    def fit(self, X, y):
-        
-        param_names = list(self.param_grid.keys())
-        param_values = list(self.param_grid.values())
-        
-        param_combinations = list(product(*param_values))
-        for param_combo in param_combinations:
-            params = dict(zip(param_names, param_combo))
-            model = self.model_class(**params)
-            scores = cross_val_score(model, X, y, cv=self.cv, scoring=self.scoring)
-            mean_score = np.mean(scores)
-            std_score = np.std(scores)
-            self.results_.append({'params': params, 'mean_score': mean_score, 'std_score': std_score, 'scores': scores})
-            if mean_score > self.best_score_:
-                self.best_score_ = mean_score
-                self.best_params_ = params
-        self.best_model_ = self.model_class(**self.best_params_)
-        self.best_model_.fit(X, y)
-        return self
-    
-    def predict(self, X):
-        return self.best_model_.predict(X)
-    
-    def score(self, X, y):
-        return self.best_model_.score(X, y)
 
 
 # ============================================================================
