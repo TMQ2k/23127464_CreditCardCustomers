@@ -1,0 +1,34 @@
+PREPROCESSING METADATA
+================================================================================
+
+Dataset shape: (10127, 40)
+Number of samples: 10127
+Number of features: 40
+  - Numerical (scaled): 20
+  - Categorical (encoded): 20
+
+Target distribution:
+  - Class 0 (Existing): 8500 (83.93%)
+  - Class 1 (Attrited): 1627 (16.07%)
+
+Scaling methods applied:
+  - Customer_Age: Standardization
+  - Dependent_count: Standardization
+  - Months_on_book: Standardization
+  - Total_Relationship_Count: Standardization
+  - Months_Inactive_12_mon: Min-Max
+  - Contacts_Count_12_mon: Standardization
+  - Credit_Limit: Log + Standardization
+  - Total_Revolving_Bal: Standardization
+  - Avg_Open_To_Buy: Log + Standardization
+  - Total_Amt_Chng_Q4_Q1: Log + Standardization
+  - Total_Trans_Amt: Log + Standardization
+  - Total_Trans_Ct: Standardization
+  - Total_Ct_Chng_Q4_Q1: Log + Standardization
+  - Avg_Utilization_Ratio: Min-Max
+  - Avg_Transaction_Value: Log + Standardization
+  - Utilization_Ratio: Min-Max
+  - Transaction_Frequency: Log + Standardization
+  - Inactive_Ratio: Min-Max
+  - Customer_Lifetime_Value: Log + Standardization
+  - Engagement_Score: Log + Standardization

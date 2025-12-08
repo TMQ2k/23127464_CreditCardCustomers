@@ -1,7 +1,0 @@
-PREPROCESSING METADATA
-==================================================
-n_samples: 10127
-n_features: 42
-n_numerical: 19
-n_categorical_encoded: 23
-target_distribution: {'existing': 8500, 'churned': 1627}
