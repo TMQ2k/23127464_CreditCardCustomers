@@ -492,7 +492,7 @@ Actual Existing    1591         130       (TN, FP)
 
 **Giải pháp:**
 
-- **Root Cause:** Threshold từ 0→1 làm `np.trapz()` cho kết quả âm
+- **Root Cause:** Threshold từ 0 --> 1 làm `np.trapz()` cho kết quả âm
 - **Fix:** Đổi threshold từ 1 thành 0
 
   ```python
@@ -508,7 +508,7 @@ Actual Existing    1591         130       (TN, FP)
 - **Explanation:**
   - `np.trapz(y, x)` tính tích phân bằng phương pháp trapezoid
   - Khi FPR tăng [0-->1] mà threshold giảm [0-->1], integral âm
-  - Đổi threshold [1-->0] để FPR tăng tự nhiên → integral dương
+  - Đổi threshold [1-->0] để FPR tăng tự nhiên --> integral dương
 - **Result:** AUC tăng từ 0.0845 --> **0.9171**
 
 ### Challenge 4: Cross-Validation Implementation
@@ -550,7 +550,7 @@ Actual Existing    1591         130       (TN, FP)
   credit_limit = X[:, feature_idx['Credit_Limit']]
   credit_util = revolving_bal / (credit_limit + 1e-10)
   ```
-- Tạo dictionary mapping feature names và indices
+- Tạo dictionary mapping feature names --> indices
 - Concatenate features mới vào X array
 
 ---
@@ -571,19 +571,6 @@ Actual Existing    1591         130       (TN, FP)
   - **XGBoost** (Gradient Boosting)
   - **Neural Network** (Multi-layer Perceptron)
 - So sánh performance giữa các models
-
-### 9.3 Advanced Preprocessing
-
-- **SMOTE (Synthetic Minority Over-sampling):** Xử lý imbalanced data
-- **Feature Selection:** Implement Recursive Feature Elimination
-- **Polynomial Features:** Tạo interaction terms tự động
-- **Advanced Scaling:** RobustScaler cho outliers
-
-### 9.4 Hyperparameter Optimization
-
-- **Grid Search:** Tìm kiếm exhaustive
-- **Random Search:** Efficient hơn Grid Search
-- **Bayesian Optimization:** Sử dụng prior knowledge
 
 ---
 
