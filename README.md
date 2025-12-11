@@ -109,11 +109,11 @@ Toàn bộ quá trình xử lý và tính toán được thực hiện **CHỈ**
 
 Tạo 6 đặc trưng mới để tăng cường thông tin:
 
-- **Credit_Utilization:** $\frac{\text{Total\_Revolving\_Bal}}{\text{Credit\_Limit}}$
-- **Avg_Transaction_Amount:** $\frac{\text{Total\_Trans\_Amt}}{\text{Total\_Trans\_Ct}}$
-- **Trans_Per_Month:** $\frac{\text{Total\_Trans\_Ct}}{\text{Months\_on\_book}}$
-- **Active_Ratio:** $\frac{\text{Months\_Inactive\_12\_mon}}{\text{Months\_on\_book}}$
-- **Relationship_Per_Product:** $\frac{\text{Total\_Relationship\_Count}}{\text{Contacts\_Count\_12\_mon}}$
+- **Credit_Utilization:** $\frac{\text{Total Revolving Bal}}{\text{Credit Limit}}$
+- **Avg_Transaction_Amount:** $\frac{\text{Total Trans Amt}}{\text{Total Trans Ct}}$
+- **Trans_Per_Month:** $\frac{\text{Total Trans Ct}}{\text{Months on book}}$
+- **Active_Ratio:** $\frac{\text{Months Inactive 12 mon}}{\text{Months on book}}$
+- **Relationship_Per_Product:** $\frac{\text{Total Relationship Count}}{\text{Contacts Count 12 mon}}$
 - **Age_Group:** Phân loại khách hàng theo độ tuổi
 
 #### 3.1.4 Encoding
