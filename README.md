@@ -109,16 +109,26 @@ Toàn bộ quá trình xử lý và tính toán được thực hiện **CHỈ**
 
 Tạo 6 đặc trưng mới để tăng cường thông tin:
 
-- **Credit_Utilization:** $\frac{\text{Total Revolving Bal}}{\text{Credit Limit}}$
-- **Avg_Transaction_Amount:** $\frac{\text{Total Trans Amt}}{\text{Total Trans Ct}}$
-- **Trans_Per_Month:** $\frac{\text{Total Trans Ct}}{\text{Months on book}}$
-- **Active_Ratio:** $\frac{\text{Months Inactive 12 mon}}{\text{Months on book}}$
-- **Relationship_Per_Product:** $\frac{\text{Total Relationship Count}}{\text{Contacts Count 12 mon}}$
-- **Age_Group:** Phân loại khách hàng theo độ tuổi
+- **Avg_Transaction_Value:** $\frac{\text{Total Trans Amt}}{\text{Total Trans Ct}}$
+- **Utilization_Ratio:** $\frac{\text{Total Revolving Bal}}{\text{Credit Limit}}$
+- **Transaction_Frequency:** $\frac{\text{Total Trans Ct}}{\text{Months on book}}$
+- **Inactive_Ratio:** $\frac{\text{Months Inactive 12 mon}}{\text{Months on book}}$
+- **Customer_Lifetime_Value:** $\text{Credit Limit} \times \text{Total Relationship Count}$
+- **Engagement_Score:** $\text{Total Trans Ct} \times (1 - \text{Inactive Ratio})$
+
+**Kết quả:** Từ 14 features số ban đầu → 20 features số (14 gốc + 6 mới)
 
 #### 3.1.4 Encoding
 
-- **One-Hot Encoding:** Áp dụng cho tất cả biến phân loại (Gender, Education, Marital Status, Income Category, Card Category)
+- **One-Hot Encoding:** Áp dụng cho 5 biến phân loại:
+  - Gender (2 values) → 2 features
+  - Education_Level (6 values) → 6 features
+  - Marital_Status (3 values) → 3 features
+  - Income_Category (5 values) → 5 features
+  - Card_Category (4 values) → 4 features
+  - **Total:** 20 encoded features
+
+**Tổng features sau preprocessing:** 20 numerical + 20 encoded = **40 features**
 
 #### 3.1.5 Statistical Tests
 
@@ -359,6 +369,7 @@ Actual Existing    1591         130       (TN, FP)
 
 ```
 23127464_CreditCardCustomers/
+├── .gitignore                              # Git ignore file
 ├── README.md                               # Documentation chính
 ├── requirements.txt                        # Python dependencies
 │
@@ -366,60 +377,67 @@ Actual Existing    1591         130       (TN, FP)
 │   ├── raw/
 │   │   └── BankChurners.csv                # Dữ liệu gốc (10,127 × 23)
 │   └── processed/
-│       ├── X_preprocessed.npy              # Features đã xử lý (8,102 × ~40)
-│       ├── y_target.npy                    # Target variable (8,102,)
-│       ├── feature_names.txt               # Danh sách tên features
-│       └── logistic_regression_model.pkl   # Model đã train
+│       ├── X_preprocessed.npy              # Features đã xử lý (10,127 × 40)
+│       ├── y_target.npy                    # Target variable (10,127,)
+│       ├── feature_names.txt               # Danh sách 40 features (20 numeric + 20 encoded)
+│       └── preprocessing_metadata.txt      # Chi tiết scaling methods và distribution
 │
 ├── notebooks/                              # Jupyter Notebooks
 │   ├── 01_data_exploration.ipynb           # EDA & Statistical Analysis
 │   ├── 02_preprocessing.ipynb              # Data Preprocessing Pipeline
 │   └── 03_modeling.ipynb                   # Model Training & Evaluation
 │
-├── src/                                    # Source code modules
-│   ├── __init__.py
-│   ├── data_processing.py                  # Data processing utilities
-│   │   ├── feature_typing()                # Tự động phân loại numeric/categorical
-│   │   ├── min_max_scale()                 # Min-Max scaling
-│   │   ├── standard_scale()                # Z-score standardization
-│   │   ├── log_transform()                 # Log transformation
-│   │   ├── one_hot_encode_manual()         # One-hot encoding
-│   │   ├── chi_square_test_manual()        # Chi-square test
-│   │   └── t_test_independent_manual()     # T-test
-│   │
-│   ├── models.py                           # Machine Learning models (NumPy only)
-│   │   ├── sigmoid()                       # Sigmoid activation
-│   │   ├── LogisticRegression              # Logistic Regression class
-│   │   │   ├── __init__()
-│   │   │   ├── fit()                       # Training with Gradient Descent
-│   │   │   ├── predict_proba()             # Probability predictions
-│   │   │   ├── predict()                   # Binary predictions
-│   │   │   └── score()                     # Accuracy score
-│   │   ├── accuracy_score()                # Accuracy metric
-│   │   ├── precision_score()               # Precision metric
-│   │   ├── recall_score()                  # Recall metric
-│   │   ├── f1_score()                      # F1-score metric
-│   │   ├── roc_auc_score()                 # ROC AUC metric
-│   │   ├── confusion_matrix()              # Confusion matrix
-│   │   ├── train_test_split()              # Data splitting
-│   │   ├── k_fold_split()                  # K-fold CV splitting
-│   │   ├── cross_val_score()               # Cross-validation
-│   │   └── GridSearchCV                    # Hyperparameter tuning
-│   │
-│   └── visualization.py                    # Visualization functions
-│       ├── plot_target_distribution()      # Target distribution plots
-│       ├── plot_train_test_split()         # Train-test split viz
-│       ├── plot_training_history()         # Training curves
-│       ├── plot_confusion_matrix()         # Confusion matrix heatmap
-│       ├── plot_metrics_comparison()       # Metrics bar chart
-│       ├── plot_train_test_comparison()    # Train vs Test performance
-│       ├── plot_feature_importance()       # Feature importance chart
-│       ├── plot_prediction_distribution()  # Prediction analysis
-│       ├── plot_roc_curve()                # ROC curve
-│       ├── plot_residuals()                # Residual analysis
-│       └── save_all_figures()              # Save all plots
-│
-└── .gitignore                         # Git ignore file
+└── src/                                    # Source code modules
+    ├── __pycache__/                        # Python bytecode cache
+    ├── data_processing.py                  # Data processing utilities (10 functions)
+    │   ├── feature_typing()                # Tự động phân loại numeric/categorical
+    │   ├── min_max_scale()                 # Min-Max scaling [0,1]
+    │   ├── standard_scale()                # Z-score standardization
+    │   ├── log_transform()                 # Log transformation (log1p)
+    │   ├── one_hot_encode_manual()         # One-hot encoding
+    │   ├── chi_square_test_manual()        # Chi-square test
+    │   ├── t_test_independent_manual()     # Independent T-test
+    │   ├── cap_outliers_zscore()           # Cap outliers using Z-score
+    │   ├── detect_outliers_iqr()           # Detect outliers using IQR
+    │   └── calculate_skewness()            # Calculate skewness coefficient
+    │
+    ├── models.py                           # Machine Learning models
+    │   ├── sigmoid()                       # Sigmoid activation
+    │   ├── sigmoid_derivative()            # Derivative of sigmoid
+    │   ├── mean_squared_error()            # MSE loss
+    │   ├── binary_cross_entropy()          # BCE loss
+    │   ├── mse_derivative()                # MSE gradient
+    │   ├── accuracy_score()                # Accuracy metric
+    │   ├── precision_score()               # Precision metric
+    │   ├── recall_score()                  # Recall metric
+    │   ├── f1_score()                      # F1-score metric
+    │   ├── roc_auc_score()                 # ROC AUC metric
+    │   ├── confusion_matrix()              # Confusion matrix
+    │   ├── classification_report()         # Full classification report
+    │   ├── LogisticRegression              # Logistic Regression class
+    │   │   ├── __init__()                  # Initialize with hyperparameters
+    │   │   ├── fit()                       # Training with Gradient Descent
+    │   │   ├── predict_proba()             # Probability predictions
+    │   │   ├── predict()                   # Binary predictions
+    │   │   └── score()                     # Accuracy score
+    │   ├── train_test_split()              # Data splitting
+    │   ├── k_fold_split()                  # K-fold CV splitting
+    │   ├── cross_val_score()               # Cross-validation
+    │   ├── normalize_features()            # Feature normalization
+    │   └── print_classification_report()   # Pretty print report
+    │
+    └── visualization.py                    # Visualization functions
+        ├── plot_target_distribution()      # Target distribution plots (pie + bar)
+        ├── plot_train_test_split()         # Train-test split visualization
+        ├── plot_training_history()         # Training curves (loss/accuracy)
+        ├── plot_confusion_matrix()         # Confusion matrix heatmap
+        ├── plot_metrics_comparison()       # Metrics bar chart
+        ├── plot_train_test_comparison()    # Train vs Test performance
+        ├── plot_feature_importance()       # Feature importance chart
+        ├── plot_prediction_distribution()  # Prediction analysis
+        ├── plot_roc_curve()                # ROC curve with AUC
+        ├── plot_residuals()                # Residual analysis
+        └── save_all_figures()              # Batch save all plots
 ```
 
 ### Chức năng từng File/Folder:
@@ -427,19 +445,75 @@ Actual Existing    1591         130       (TN, FP)
 #### `data/`
 
 - **raw/**: Chứa dữ liệu gốc chưa xử lý
-- **processed/**: Chứa dữ liệu đã xử lý và model đã train
+  - BankChurners.csv: 10,127 samples × 23 features
+- **processed/**: Chứa dữ liệu đã xử lý
+  - X_preprocessed.npy: 10,127 × 40 features (NumPy array)
+  - y_target.npy: 10,127 labels (0: Existing, 1: Attrited)
+  - feature_names.txt: 40 feature names (20 numeric scaled + 20 categorical encoded)
+  - preprocessing_metadata.txt: Scaling methods, distribution info, feature engineering details
 
 #### `notebooks/`
 
-- **01_data_exploration.ipynb**: Khám phá dữ liệu, phân tích thống kê, trực quan hóa
-- **02_preprocessing.ipynb**: Pipeline xử lý dữ liệu hoàn chỉnh (9 bước)
-- **03_modeling.ipynb**: Training, evaluation và visualization model
+- **01_data_exploration.ipynb**: EDA & Statistical Analysis (28 cells)
+  - Load và validate dữ liệu thô
+  - Descriptive statistics (mean, median, std, quartiles)
+  - Missing values analysis
+  - Data type identification (numeric vs categorical)
+  - Distribution analysis (histogram, boxplot)
+  - Correlation analysis
+  - Target variable analysis (Attrition_Flag)
+  - Categorical features visualization
+  - Outlier detection với IQR method
+  - Statistical tests (Chi-square, T-test)
+  - Summary và insights
+- **02_preprocessing.ipynb**: Data Preprocessing Pipeline (29 cells)
+  - Load raw data và remove unnecessary columns
+  - Data validation (duplicates, consistency)
+  - Handle missing values (KNN Imputation)
+  - Outlier treatment (Z-score capping, IQR)
+  - Feature scaling (StandardScaler)
+  - Feature engineering (6 new features)
+  - One-hot encoding cho categorical variables
+  - Feature selection based on statistical tests
+  - Train-test split (80/20)
+  - Save processed data (X_preprocessed.npy, y_target.npy)
+- **03_modeling.ipynb**: Model Training & Evaluation (32 cells)
+  - Load preprocessed data
+  - Exploratory analysis on processed features
+  - Train-test split verification
+  - Logistic Regression model initialization
+  - Model training với Gradient Descent
+  - Training history visualization (loss & accuracy curves)
+  - Model evaluation (accuracy, precision, recall, F1)
+  - Confusion matrix analysis
+  - ROC curve & AUC score (0.9171)
+  - Feature importance analysis
+  - Cross-validation (5-fold)
+  - Prediction distribution analysis
+  - Final model summary & conclusions
 
-#### `src/`
+---
 
-- **data_processing.py**: Các hàm tiện ích xử lý dữ liệu
-- **models.py**: Implementation Logistic Regression và evaluation metrics
+- **data_processing.py**: 10 hàm tiện ích xử lý dữ liệu
+  - Feature typing, scaling (min-max, standard, log)
+  - One-hot encoding
+  - Statistical tests (Chi-square, T-test)
+  - Outlier detection & handling (Z-score, IQR)
+  - Skewness calculation
+- **models.py**: Machine Learning implementation với NumPy (18 functions + 1 class)
+  - Activation functions: sigmoid, sigmoid_derivative
+  - Loss functions: MSE, Binary Cross-Entropy
+  - Metrics: accuracy, precision, recall, F1, ROC AUC, confusion matrix
+  - Classification report generator
+  - LogisticRegression class với Gradient Descent
+  - Data utilities: train_test_split, k_fold_split, cross_val_score
+  - Feature normalization
 - **visualization.py**: 11 hàm visualization với Matplotlib/Seaborn
+  - Distribution plots (target, train-test split)
+  - Training history plots (loss, accuracy curves)
+  - Performance plots (confusion matrix, ROC curve, metrics comparison)
+  - Analysis plots (feature importance, predictions, residuals)
+  - Batch save utility
 
 ---
 
@@ -492,7 +566,7 @@ Actual Existing    1591         130       (TN, FP)
 
 **Giải pháp:**
 
-- **Root Cause:** Threshold từ 0 --> 1 làm `np.trapz()` cho kết quả âm
+- **Root Cause:** Threshold từ 0 $\rightarrow$ 1 làm `np.trapz()` cho kết quả âm
 - **Fix:** Đổi threshold từ 1 thành 0
 
   ```python
@@ -507,9 +581,9 @@ Actual Existing    1591         130       (TN, FP)
 
 - **Explanation:**
   - `np.trapz(y, x)` tính tích phân bằng phương pháp trapezoid
-  - Khi FPR tăng [0-->1] mà threshold giảm [0-->1], integral âm
-  - Đổi threshold [1-->0] để FPR tăng tự nhiên --> integral dương
-- **Result:** AUC tăng từ 0.0845 --> **0.9171**
+  - Khi FPR tăng [0 $\rightarrow$ 1] mà threshold giảm [0 $\rightarrow$ 1], integral âm
+  - Đổi threshold [1 $\rightarrow$ 0] để FPR tăng tự nhiên $\rightarrow$ integral dương
+- **Result:** AUC tăng từ 0.0845 $\rightarrow$ **0.9171**
 
 ### Challenge 4: Cross-Validation Implementation
 
@@ -550,7 +624,7 @@ Actual Existing    1591         130       (TN, FP)
   credit_limit = X[:, feature_idx['Credit_Limit']]
   credit_util = revolving_bal / (credit_limit + 1e-10)
   ```
-- Tạo dictionary mapping feature names --> indices
+- Tạo dictionary mapping feature names $\rightarrow$ indices
 - Concatenate features mới vào X array
 
 ---

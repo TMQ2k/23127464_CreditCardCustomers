@@ -70,4 +70,55 @@ def t_test_independent_manual(group1, group2):
     z_approx = abs(t_stat)
     p_value = 2 * (1 - 0.5 * (1 + np.tanh(z_approx / np.sqrt(2))))
     return t_stat, p_value, df
+
+def cap_outliers_zscore(values):
+    
+    values = values.astype(float)
+    mean = np.mean(values)
+    std = np.std(values)
+    
+    if std == 0: return values, 0
+    
+    threshold = 3
+    upper_bound = mean + threshold * std
+    lower_bound = mean - threshold * std
+    
+    # Đếm outliers
+    n_outliers = np.sum((values > upper_bound) | (values < lower_bound))
+    
+    # Capping (Kẹp giá trị trong khoảng)
+    values_clipped = np.clip(values, lower_bound, upper_bound)
+    
+    return values_clipped, n_outliers
+
+def detect_outliers_iqr(values, multiplier=1.5):
+
+    values = values.astype(float)
+    q1 = np.percentile(values, 25)
+    q3 = np.percentile(values, 75)
+    iqr = q3 - q1
+    
+    lower_bound = q1 - multiplier * iqr
+    upper_bound = q3 + multiplier * iqr
+    
+    outliers = (values < lower_bound) | (values > upper_bound)
+    n_outliers = np.sum(outliers)
+    
+    return {
+        'q1': q1,
+        'q3': q3,
+        'iqr': iqr,
+        'lower_bound': lower_bound,
+        'upper_bound': upper_bound,
+        'n_outliers': n_outliers,
+        'outlier_pct': (n_outliers / len(values)) * 100
+    }
+
+def calculate_skewness(arr):
+    arr = arr.astype(float)
+    mean = np.mean(arr)
+    std = np.std(arr)
+    if std == 0: return 0
+    n = len(arr)
+    return (n / ((n-1) * (n-2))) * np.sum(((arr - mean) / std) ** 3)
     
